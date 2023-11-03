@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: {{.Release.Namespace}}
+spec:
+  replicas: {{.Values.global.replicas}}
+  selector:
+    matchLabels:
+      demo: app1
+  template:
+    metadata:
+      labels:
+        demo: app1
+    spec:
+      containers:
+      - name: nginx
+        # 这里引入变量，层级调用，.Values表声明作用
+        image: {{.Values.image.repository}}:{{.Values.image.tag}}
+        ports:
+        - containerPort: 80
+          name: http
