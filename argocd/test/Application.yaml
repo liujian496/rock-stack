@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demo-argocd
+  namespace: argocd
+spec:
+  project: default # 所属项目,默认即可
+  source:
+    repoURL: git@github.com:liujian496/rock-stack.git # helm所在的git仓库地址(后面需要推送的git仓库)
+    # git仓库的分支版本
+    targetRevision: main
+    # helm文件在git仓库的相对路径
+    path: helm/app1
+    # 这里定义传递给helm执行的参数
+    # 类型values.yaml
+    helm:
+      parameters:
+      - name: image.repository
+        value: nginx
+      - name: image.tag
+        value: 1.14.2
+      - name: global.replicas
+        value: "1"
+  destination:
+    # 部署到当前k8s集群的地址
+    server: https://kubernetes.default.svc
+    # 部署目标命名空间
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+    - Validate=false
+    - CreateNamespace=true
+    - PrunePropagationPolicy=foreground
+    - PruneLast=true
+    retry:
+      limit: 5
+      backoff:
+        factor: 2
+        maxDuration: 1m
